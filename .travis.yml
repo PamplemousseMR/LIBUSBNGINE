@@ -437,6 +437,10 @@ matrix:
 
 before_install:
   - eval ${MATRIX_EVAL}
+  - if [ $TRAVIS_OS_NAME = "osx" ]; then
+      curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py;
+      sudo python get-pip.py;
+    fi;
 
 install:
   - sudo pip install conan
