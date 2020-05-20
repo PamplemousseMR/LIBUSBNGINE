@@ -3,56 +3,58 @@
 #=======================================
 
 cmake_minimum_required(VERSION 3.8)
-project("LIBUSBNGINE")
+project("LIBUSBNGINE" VERSION 0.1 LANGUAGES CXX)
 
 #=======================================
-#                 INIT                 
-#======================================= 
-
-#---------------------------------------
-#               VARIABLES               
-#---------------------------------------
-
-set(LIBUSBNGINE_SRC_DIR "src")
-set(LIBUSBNGINE_HEADER_DIR "include")
-set(LIBUSBNGINE_PROJECT_NAME "libusbngine")
-
-#---------------------------------------
-#                 FILES                 
-#---------------------------------------
-
-file(GLOB_RECURSE LIBUSBNGINE_src_files ${LIBUSBNGINE_SRC_DIR}/*)
-file(GLOB_RECURSE LIBUSBNGINE_header_files ${LIBUSBNGINE_HEADER_DIR}/*)
-
-#---------------------------------------
-#                 CONAN                 
-#---------------------------------------
+#                CONAN                
+#=======================================
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+conan_basic_setup(TARGETS)
 
 #=======================================
-#                CREATE                
+#               EXECUTABLE              
+#======================================= 
+
+set(
+	LIBUSBNGINE_HEADER_FILES
+	)
+
+add_executable(
+	${PROJECT_NAME}
+	src/main.cpp
+	)
+
+target_include_directories(
+	${PROJECT_NAME} 
+	PRIVATE ${LIBUSBNGINE_HEADER_FILES}
+	)
+
+#=======================================
+#                SETTINGS               
 #=======================================
 
-#---------------------------------------
-#                PROJECT                
-#---------------------------------------
+set_target_properties(
+	${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+    )
 
-add_executable(${LIBUSBNGINE_PROJECT_NAME}  ${LIBUSBNGINE_src_files} ${LIBUSBNGINE_header_files})
-target_include_directories(${LIBUSBNGINE_PROJECT_NAME} PRIVATE ${LIBUSBNGINE_HEADER_DIR})
+#=======================================
+#                PACKAGE                
+#=======================================
 
-#--------------------------------------- 
-#              PROPERTIES              
-#---------------------------------------
+target_link_libraries(${PROJECT_NAME} CONAN_PKG::libusb)
 
-set_target_properties(${LIBUSBNGINE_PROJECT_NAME} PROPERTIES
-                        CXX_STANDARD 14
-                        CXX_STANDARD_REQUIRED ON
-                        CXX_EXTENSIONS OFF)
 
-#---------------------------------------
-#                 CONAN                 
-#---------------------------------------
+#=======================================
+#                INSTALL                
+#=======================================
 
-target_link_libraries(${LIBUSBNGINE_PROJECT_NAME} ${CONAN_LIBS})
+set(LIBUSBNGINE_RUNTIME_DESTINATION "bin")
+
+install(
+	TARGETS ${PROJECT_NAME}
+	RUNTIME DESTINATION ${LIBUSBNGINE_RUNTIME_DESTINATION}
+	)

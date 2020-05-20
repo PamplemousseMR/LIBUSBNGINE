@@ -1,5 +1,7 @@
 #include <iostream>
 #include <libusb-1.0/libusb.h>
+#include <thread>
+#include <chrono>
 
 void printdev(libusb_device* const _dev, ssize_t _index)
 {
@@ -53,6 +55,36 @@ void printdev(libusb_device* const _dev, ssize_t _index)
     std::cout << std::endl << std::endl;
 }
 
+int hotplug_callback(struct libusb_context*, struct libusb_device* _dev, libusb_hotplug_event _event, void*)
+{
+    static libusb_device_handle *handle = nullptr;
+    struct libusb_device_descriptor desc;
+    (void)libusb_get_device_descriptor(_dev, &desc);
+
+    if(_event == LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED)
+    {
+        int error = libusb_open(_dev, &handle);
+        if(error != LIBUSB_SUCCESS)
+        {
+            std::cout << "Could not open USB device" << std::endl;
+        }
+    }
+    else if(_event == LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT)
+    {
+        if(handle)
+        {
+            libusb_close(handle);
+            handle = nullptr;
+        }
+    }
+    else
+    {
+        std::cout << "Unhandled event " << _event << std::endl;
+    }
+
+    return 0;
+}
+
 int main()
 {
     libusb_device**  devs;
@@ -78,9 +110,36 @@ int main()
 
     std::cout << deviceNumber << " Devices in list." << std::endl;
 
+    // Display device interfaces
     for(ssize_t i=0 ; i<deviceNumber ; ++i)
     {
         printdev(devs[i], i);
+    }
+
+    // Test to check hotplug
+    {
+        if (!libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG))
+        {
+            std::cout << "Hotplug capabilites are not supported on this platform" << std::endl;
+        }
+        else
+        {
+            libusb_hotplug_callback_handle handle;
+            int error = libusb_hotplug_register_callback(ctx, LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT, LIBUSB_HOTPLUG_NO_FLAGS , 0x1532, 0x46, LIBUSB_HOTPLUG_MATCH_ANY, hotplug_callback, nullptr, &handle);
+
+            if(error != LIBUSB_SUCCESS)
+            {
+                std::cout << "Error creating a hotplug callback: " << error << std::endl;
+            }
+            else
+            {
+                while(true)
+                {
+                    libusb_handle_events_completed(nullptr, nullptr);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                }
+            }
+        }
     }
 
     libusb_free_device_list(devs, 1);
