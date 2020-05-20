@@ -28,6 +28,9 @@ void printdev(libusb_device* const _dev, ssize_t _index)
         const libusb_interface_descriptor* interdesc;
         const libusb_endpoint_descriptor* epdesc;
 
+        std::uint8_t portNumber =  libusb_get_port_number(_dev);
+        std::cout << "\t\t-Port number: " << static_cast< int >(portNumber) << std::endl;
+
         for(int i=0 ; i<static_cast<int>(config->bNumInterfaces) ; ++i)
         {
             inter = &config->interface[i];
