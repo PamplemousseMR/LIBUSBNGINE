@@ -17,7 +17,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Generation
 
-Add bincrafters remote : `conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan`
+Add bincrafters remote : `conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan`
 
 Use conan to download/build libraries : `conan install -s build_type=Release -if C:\build_release .`
 
