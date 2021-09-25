@@ -1,60 +1,26 @@
 #=======================================
-#                PROJECT                
+#                PROJECT
 #=======================================
 
-cmake_minimum_required(VERSION 3.8)
-project("LIBUSBNGINE" VERSION 0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.0)
+project("LIBUSBNGINE" CXX)
 
 #=======================================
-#                CONAN                
+#               LIBRARIES
 #=======================================
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
+
+find_package("LibUSB" REQUIRED)
 
 #=======================================
-#               EXECUTABLE              
-#======================================= 
-
-set(
-	LIBUSBNGINE_HEADER_FILES
-	)
-
-add_executable(
-	${PROJECT_NAME}
-	src/main.cpp
-	)
-
-target_include_directories(
-	${PROJECT_NAME} 
-	PRIVATE ${LIBUSBNGINE_HEADER_FILES}
-	)
-
-#=======================================
-#                SETTINGS               
+#              EXECUTABLE
 #=======================================
 
-set_target_properties(
-	${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-    )
+set(libusbngine_src
+    libusbngine/main.cpp)
 
-#=======================================
-#                PACKAGE                
-#=======================================
-
-target_link_libraries(${PROJECT_NAME} CONAN_PKG::libusb)
-
-
-#=======================================
-#                INSTALL                
-#=======================================
-
-set(LIBUSBNGINE_RUNTIME_DESTINATION "bin")
-
-install(
-	TARGETS ${PROJECT_NAME}
-	RUNTIME DESTINATION ${LIBUSBNGINE_RUNTIME_DESTINATION}
-	)
+add_executable(libusbngine ${libusbngine_src})
+set_target_properties(libusbngine PROPERTIES CXX_STANDARD 14)
+target_link_libraries(libusbngine PRIVATE LibUSB::LibUSB)

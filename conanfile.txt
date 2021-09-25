@@ -1,5 +1,13 @@
 [requires]
-libusb/1.0.22@bincrafters/stable
+libusb/1.0.24-rc1@pamplemousseMR/stable
 
 [generators]
-cmake
+cmake_find_package
+
+[options]
+*:shared=True
+
+[imports]
+bin, *.dll -> .
+lib, *.dylib* -> .
+lib, *.so* -> .

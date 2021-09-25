@@ -2,26 +2,21 @@
 
 Libusb sandbox.
 
-## Travis
-
-[![Build Status](https://travis-ci.com/PamplemousseMR/LIBUSBNGINE.svg?branch=master)](https://travis-ci.com/PamplemousseMR/LIBUSBNGINE)
-
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
-- [Conan](https://conan.io/) : The C / C++ Package Manager for Developers.
 - [Libusb](https://github.com/libusb/libusb) : A cross-platform library to access USB devices.
 
 ### Generation
 
-Add bincrafters remote : `conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan`
+You can use [Conan](https://conan.io/), the C / C++ Package Manager to get LibUSB.
 
-Use conan to download/build libraries : `conan install -s build_type=Release -if C:\build_release .`
+Use conan to download/build libraries : `conan install -s build_type=Release -if <build_folder> .`
 
-Generate using cmake in the same build directory than conan: `cmake`.
+Generate using cmake: `cmake`.
 
 ## Authors
 
