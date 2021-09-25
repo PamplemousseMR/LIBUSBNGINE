@@ -1,0 +1,127 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.OS }}
+
+    strategy:
+      matrix:
+        name: [ubuntu_18-04_g++4-8, ubuntu_18-04_g++5, ubuntu_18-04_g++6, ubuntu_18-04_g++7, ubuntu_18-04_g++8, 
+               ubuntu_20-04_g++7, ubuntu_20-04_g++8, ubuntu_20-04_g++9, ubuntu_20-04_g++10,
+               macos_11_g++5, macos_11_g++6, macos_11_g++7, macos_11_g++8, macos_11_g++9, macos_11_g++10]
+        include:
+        - name: ubuntu_18-04_g++4-8
+          OS: ubuntu-18.04
+          COMPILER: g++-4.8
+
+        - name: ubuntu_18-04_g++5
+          OS: ubuntu-18.04
+          COMPILER: g++-5
+
+        - name: ubuntu_18-04_g++6
+          OS: ubuntu-18.04
+          COMPILER: g++-6
+
+        - name: ubuntu_18-04_g++7
+          OS: ubuntu-18.04
+          COMPILER: g++-7
+
+        - name: ubuntu_18-04_g++8
+          OS: ubuntu-18.04
+          COMPILER: g++-8
+
+        - name: ubuntu_20-04_g++7
+          OS: ubuntu-20.04
+          COMPILER: g++-7
+
+        - name: ubuntu_20-04_g++8
+          OS: ubuntu-20.04
+          COMPILER: g++-8
+
+        - name: ubuntu_20-04_g++9
+          OS: ubuntu-20.04
+          COMPILER: g++-9
+
+        - name: ubuntu_20-04_g++10
+          OS: ubuntu-20.04
+          COMPILER: g++-10
+
+        - name: macos_11_g++5
+          OS: macos-11
+          INSTALL: gcc@5
+          COMPILER: g++-5
+
+        - name: macos_11_g++6
+          OS: macos-11
+          INSTALL: gcc@6
+          COMPILER: g++-6
+
+        - name: macos_11_g++7
+          OS: macos-11
+          INSTALL: gcc@7
+          COMPILER: g++-7
+
+        - name: macos_11_g++8
+          OS: macos-11
+          INSTALL: gcc@8
+          COMPILER: g++-8
+
+        - name: macos_11_g++9
+          OS: macos-11
+          INSTALL: gcc@9
+          COMPILER: g++-9
+
+        - name: macos_11_g++10
+          OS: macos-11
+          INSTALL: gcc@10
+          COMPILER: g++-10
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Package
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+              sudo apt-get update
+              sudo apt-get --assume-yes install ${{ matrix.COMPILER }}
+              sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglu1-mesa-dev python3-setuptools
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+              echo "$RUNNER_OS not supported"
+              exit 1
+          else
+              brew install ${{ matrix.INSTALL }}
+          fi
+          sudo pip3 install conan
+          sudo pip3 install --upgrade urllib3
+          sudo pip3 install --upgrade jinja2
+
+      - name: Conan create
+        run: |
+          git clone https://github.com/PamplemousseMR/conan-recipes.git
+          cd conan-recipes
+          git checkout v1.0.0
+          cd conan-libusb
+          conan create -s build_type=Debug . 1.0.24-rc1@pamplemousseMR/stable
+          conan create -s build_type=Release . 1.0.24-rc1@pamplemousseMR/stable
+          cd ${{github.workspace}}
+
+      - name: Conan install
+        run: |
+          mkdir build_debug
+          conan install -s build_type=Debug -if build_debug .
+          mkdir build_release
+          conan install -s build_type=Release -if build_release .
+
+      - name: Configure
+        run: |
+          cmake -B ${{github.workspace}}/build_debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=${{ matrix.COMPILER }}
+          cmake -B ${{github.workspace}}/build_release -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.COMPILER }}
+
+      - name: Build
+        run: |
+          cmake --build ${{github.workspace}}/build_debug
+          cmake --build ${{github.workspace}}/build_release
