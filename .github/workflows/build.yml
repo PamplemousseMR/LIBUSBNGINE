@@ -88,6 +88,7 @@ jobs:
           if [ "$RUNNER_OS" == "Linux" ]; then
               sudo apt-get update
               sudo apt-get --assume-yes install ${{ matrix.COMPILER }}
+              sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/${{ matrix.COMPILER }} 50
               sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglu1-mesa-dev python3-setuptools
           elif [ "$RUNNER_OS" == "Windows" ]; then
               echo "$RUNNER_OS not supported"
